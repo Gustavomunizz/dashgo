@@ -1,16 +1,29 @@
 import { Flex, Button, Stack } from '@chakra-ui/react'
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { Input } from '../components/Form/Input'
 
-interface SignInFormData {
+type SignInFormData = {
   email: string
   password: string
 }
 
-export default function SignIn() {
-  const { register, handleSubmit } = useForm()
+const signInFormSchema = yup.object().shape({
+  email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
+  password: yup.string().required('Senha obrigatoria')
+})
 
-  const handleSignIn: SubmitHandler<SignInFormData> = data => console.log(data)
+export default function SignIn() {
+  const { register, handleSubmit, formState } = useForm({
+    resolver: yupResolver(signInFormSchema)
+  })
+
+  const { errors } = formState
+
+  const handleSignIn: SubmitHandler<FieldValues> = async data => {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+  }
 
   return (
     <Flex w="100vw" h="100vh" align="center" justify="center">
@@ -25,10 +38,28 @@ export default function SignIn() {
         onSubmit={handleSubmit(handleSignIn)}
       >
         <Stack spacing={4}>
-          <Input label="E-mail" type="email" autoComplete="on" {...register('email')} />
-          <Input label="Senha" type="password" autoComplete="on" {...register('password')} />
+          <Input
+            label="E-mail"
+            type="email"
+            autoComplete="on"
+            error={errors.email}
+            {...register('email')}
+          />
+          <Input
+            label="Senha"
+            type="password"
+            autoComplete="on"
+            error={errors.password}
+            {...register('password')}
+          />
         </Stack>
-        <Button type="submit" mt="6" colorScheme="pink" size="lg">
+        <Button
+          type="submit"
+          mt="6"
+          colorScheme="pink"
+          size="lg"
+          isLoading={formState.isSubmitting}
+        >
           Entrar
         </Button>
       </Flex>
@@ -65,3 +96,6 @@ export default function SignIn() {
 // Segunda forma Uncontrolled Components, é uma forma de nós acessarmos o valor do input somente no momento que nós precisarmos dele. Ou seja nós não armazenamos o valor do input dentro e uma variavel no estado. Dentro do React nós fazemos isso usando refs. Nós usamos o hook useRef
 
 // Para formulários mais simples é muito mais fácil usar controlled components. Mas dessa vez vamos usar da forma do uncontrolled components, mas nós não vamo susar ref, vamos usar uma lib chamada react-hook-form
+
+//                      Biblioteca Yup
+// Ela é uma biblioteca de validação de formulários, ele vai nos ajudar a fazer validações de forma mais simples e rápida.
