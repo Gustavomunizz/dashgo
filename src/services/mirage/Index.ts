@@ -1,4 +1,4 @@
-import { createServer, Factory, Model, Response } from 'miragejs'
+import { ActiveModelSerializer, createServer, Factory, Model, Response } from 'miragejs'
 import faker from 'faker'
 
 type UserProps = {
@@ -9,6 +9,10 @@ type UserProps = {
 
 export function makeServer() {
   const server = createServer({
+    serializers: {
+      application: ActiveModelSerializer
+    },
+
     models: {
       user: Model.extend<Partial<UserProps>>({})
     },
@@ -64,3 +68,8 @@ export function makeServer() {
 // Essa função que estamos passando para ele está fazendo a paginação, ao invés de retornar 200 usuários, vai retornar de 10 em 10 dependendo da página.
 
 // Factories e seeds -> Eles criam dados ficticios para quando a página for carrega já ter os dados.
+
+// Serializers -> Ele mostra ao mirage como ele deve interpretar os dados que são enviados por ele.
+// Exemplo: Nós temos o user, mas imagina que nós vamos ter address tbm, e ele ta relacionado com o users. Ai para fazer o cadastro nos fariamos nós pegariamos do user o nome, email e etc..., mas vai que no futuro nós queiramos colocar as informações do address junto com users, normalmente como é um relacionamento entre as tabelas, nós referenciariamos o id do address no users, mas isso faria com que ocorre-se 2 chamadas a API (A primeiro para cadastrar o endereço e a segundo o usuário).
+// Para resolver isso, tem como dizer ao mirage que nós estamos usando um padrão de escrita de API, que nós conseguimos cadastrar essas chamadas ao mesmo tempo.
+// O padrão que vamos usar é o Active Model, ele envia os dados, relacionamentos tudo numa requisição só, ele serve tanto para envios quanto para recebimentos. Ele é oo padrão mais comum para API's

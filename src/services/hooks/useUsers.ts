@@ -1,7 +1,6 @@
 import { useQuery } from 'react-query'
 import { api } from '../api'
 import { dataUsersProps } from '../../pages/users/index'
-import { number } from 'yup'
 
 type UserProps = {
   id: string

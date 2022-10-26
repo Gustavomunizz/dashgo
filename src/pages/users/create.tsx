@@ -6,6 +6,10 @@ import { Header } from '../../components/Header'
 import { Sidebar } from '../../components/Sidebar'
 import { Input } from '../../components/Form/Input'
 import Link from 'next/link'
+import { useMutation } from 'react-query'
+import { api } from '../../services/api'
+import { queryClient } from '../../services/queryClient'
+import { useRouter } from 'next/router'
 
 type createUserFormData = {
   name: string
@@ -24,13 +28,32 @@ const createUserFormSchema = yup.object().shape({
 })
 
 export default function CreateUser() {
+  const router = useRouter()
+  const createUser = useMutation(
+    async (user: createUserFormData) => {
+      const response = await api.post('users', {
+        user: {
+          ...user,
+          created_at: new Date()
+        }
+      })
+      return response.data.user
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('users')
+      }
+    }
+  )
+
   const { register, handleSubmit, formState } = useForm({
     resolver: yupResolver(createUserFormSchema)
   })
 
-  const handleCreateUser: SubmitHandler<FieldValues> = async data => {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log(data)
+  const handleCreateUser: SubmitHandler<createUserFormData> = async data => {
+    await createUser.mutateAsync(data)
+
+    router.push('/users')
   }
 
   const { errors } = formState
@@ -111,3 +134,9 @@ export default function CreateUser() {
 // VStack -> Ele é a mesma coisa que o Stack, mas o V é de vertical
 // SimpleGrid -> É um display grid com umas funcionalidades responsivas prontas.
 // Quando a tela diminui demais os itens do grid ficam um debaixo do outro
+
+//                              React Query Mutations
+
+// Mutations -> Quando não estamos fazendo uma chamada de busca de dados na API, quando é busca se chama query, mutations é quando nós fazemos uma chamada para criar, alterar ou deletar dados dentro API.
+// Para fazer as mutations com o react-query nós usamos o hook useMutation e nele nós passamos a função assincrona que vai cadastrar, alterar ou deletar o usuário
+// useMutation X tradicional -> fazendo as chamadas a API pelo useMutation nós conseguimos manipular/controlar os estados da chamada, como se teve sucesso(isSucessed), em loading(isLoading), pausa(isPaused), com erro e etc
